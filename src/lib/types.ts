@@ -40,10 +40,15 @@ export interface Product {
   is_best_seller: boolean;
   is_new: boolean;
   primary_image_url: string;
+  colors: string[];
+  sizes: string[];
+  discount: number;
+  cod_available: boolean;
   created_at: string;
   updated_at: string;
   // joined
   category?: Category | null;
+  product_images?: ProductImage[];
 }
 
 export interface ProductImage {

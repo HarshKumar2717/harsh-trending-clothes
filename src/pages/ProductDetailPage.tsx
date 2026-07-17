@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Heart, ShoppingCart, Truck, ShieldCheck, RefreshCw, ChevronRight,
-  Minus, Plus, Star, Check,
+  Minus, Plus, Star, Check, Banknote,
 } from 'lucide-react';
-import { fetchProductBySlug, fetchRelatedProducts, fetchReviews, addReview } from '../lib/api';
+import { fetchProductBySlug, fetchRelatedProducts, fetchReviews, addReview, fetchProductImages } from '../lib/api';
+import type { ProductImage } from '../lib/types';
 import type { Product, Review } from '../lib/types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -26,6 +27,7 @@ export function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [gallery, setGallery] = useState<ProductImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<'desc' | 'reviews'>('desc');
@@ -33,22 +35,32 @@ export function ProductDetailPage() {
   const [newTitle, setNewTitle] = useState('');
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
 
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
     setQty(1);
     setTab('desc');
+    setActiveImage(0);
+    setSelectedColor('');
+    setSelectedSize('');
     (async () => {
       const p = await fetchProductBySlug(slug);
       setProduct(p);
       if (p) {
-        const [r, rv] = await Promise.all([
+        const [r, rv, imgs] = await Promise.all([
           fetchRelatedProducts(p),
           fetchReviews(p.id),
+          fetchProductImages(p.id),
         ]);
         setRelated(r);
         setReviews(rv);
+        setGallery(imgs);
+        if (p.colors.length > 0) setSelectedColor(p.colors[0]);
+        if (p.sizes.length > 0) setSelectedSize(p.sizes[0]);
       }
       setLoading(false);
     })();
@@ -114,12 +126,29 @@ export function ProductDetailPage() {
         {/* Image */}
         <div className="animate-fade-in">
           <div className="relative overflow-hidden rounded-3xl bg-ink-50">
-            <img src={product.primary_image_url} alt={product.name} className="aspect-[3/4] w-full object-cover" />
+            <img
+              src={gallery[activeImage]?.image_url || product.primary_image_url}
+              alt={product.name}
+              className="aspect-[3/4] w-full object-cover transition-opacity duration-300"
+            />
             <div className="absolute left-4 top-4 flex flex-col gap-2">
               {off > 0 && <span className="chip bg-ink-900 text-gold-400">{off}% OFF</span>}
               {product.is_best_seller && <span className="chip bg-gold-400 text-ink-950">Bestseller</span>}
             </div>
           </div>
+          {gallery.length > 1 && (
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {gallery.map((img, i) => (
+                <button
+                  key={img.id}
+                  onClick={() => setActiveImage(i)}
+                  className={cn('flex-shrink-0 overflow-hidden rounded-xl border-2 transition', activeImage === i ? 'border-gold-400' : 'border-transparent hover:border-ink-200')}
+                >
+                  <img src={img.image_url} alt="" className="h-20 w-16 object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Info */}
@@ -159,6 +188,48 @@ export function ProductDetailPage() {
             )}
           </div>
 
+          {/* Colors */}
+          {product.colors.length > 0 && (
+            <div className="mt-5">
+              <p className="mb-2 text-sm font-semibold text-ink-700">Color: <span className="text-ink-500">{selectedColor}</span></p>
+              <div className="flex flex-wrap gap-2">
+                {product.colors.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setSelectedColor(c)}
+                    className={cn(
+                      'rounded-full border px-4 py-1.5 text-xs font-medium transition',
+                      selectedColor === c ? 'border-gold-400 bg-gold-50 text-gold-700' : 'border-ink-200 text-ink-600 hover:border-ink-300'
+                    )}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sizes */}
+          {product.sizes.length > 0 && (
+            <div className="mt-5">
+              <p className="mb-2 text-sm font-semibold text-ink-700">Size: <span className="text-ink-500">{selectedSize}</span></p>
+              <div className="flex flex-wrap gap-2">
+                {product.sizes.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSelectedSize(s)}
+                    className={cn(
+                      'min-w-[44px] rounded-lg border px-3 py-2 text-sm font-medium transition',
+                      selectedSize === s ? 'border-gold-400 bg-gold-500 text-white' : 'border-ink-200 text-ink-700 hover:border-gold-400 hover:text-gold-600'
+                    )}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Quantity */}
           <div className="mt-6 flex items-center gap-4">
             <span className="text-sm font-semibold text-ink-700">Quantity</span>
@@ -187,6 +258,20 @@ export function ProductDetailPage() {
             >
               <Heart size={20} className={wished ? 'fill-red-500' : ''} />
             </button>
+          </div>
+
+          {/* COD + Delivery info */}
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-ink-500">
+            {product.cod_available ? (
+              <span className="flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">
+                <Banknote size={14} /> COD Available
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 font-medium text-red-600">
+                <Banknote size={14} /> COD Not Available
+              </span>
+            )}
+            <span className="text-ink-400">Free delivery over Rs 1499</span>
           </div>
 
           {/* Assurances */}
