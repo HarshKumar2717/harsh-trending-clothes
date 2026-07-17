@@ -1,4 +1,4 @@
-export type Role = 'customer' | 'super_admin';
+export type Role = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
 
 export interface Profile {
   id: string;
@@ -101,7 +101,7 @@ export type OrderStatus =
   | 'pending' | 'confirmed' | 'processing' | 'shipped'
   | 'out_for_delivery' | 'delivered' | 'cancelled' | 'returned';
 
-export type PaymentMethod = 'upi' | 'debit_card' | 'credit_card' | 'cod';
+export type PaymentMethod = 'cod';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 
 export interface OrderItem {

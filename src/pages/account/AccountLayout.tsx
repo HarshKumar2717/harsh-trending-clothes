@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { User, Package, Heart, MapPin, LogOut, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import { User, Package, Heart, MapPin, LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { initials } from '../../lib/utils';
 import { cn } from '../../lib/utils';
@@ -13,7 +13,7 @@ const LINKS = [
 ];
 
 export function AccountLayout() {
-  const { profile, signOut, isAdmin } = useAuth();
+  const { profile, signOut } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -33,7 +33,6 @@ export function AccountLayout() {
               <div className="min-w-0">
                 <p className="truncate font-semibold text-ink-900">{profile?.full_name || 'User'}</p>
                 <p className="truncate text-xs text-ink-500">{profile?.email}</p>
-                {isAdmin && <span className="chip-gold mt-1 text-[10px]">Super Admin</span>}
               </div>
             </div>
             <nav className="mt-3 flex flex-col gap-1">
@@ -50,11 +49,6 @@ export function AccountLayout() {
                   <l.icon size={18} /> {l.label}
                 </NavLink>
               ))}
-              {isAdmin && (
-                <NavLink to="/admin" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-600 hover:bg-ink-50">
-                  <ShieldCheck size={18} /> Admin Panel
-                </NavLink>
-              )}
               <button
                 onClick={() => { signOut(); navigate('/'); }}
                 className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"

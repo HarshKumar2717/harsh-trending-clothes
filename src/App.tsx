@@ -21,9 +21,11 @@ import { TermsPage } from './pages/TermsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 import { LoginPage } from './pages/auth/LoginPage';
+import { AdminLoginPage } from './pages/auth/AdminLoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
+import { AccessDeniedPage } from './pages/AccessDeniedPage';
 
 import { AccountLayout } from './pages/account/AccountLayout';
 import { AccountDashboard } from './pages/account/AccountDashboard';
@@ -40,6 +42,9 @@ import { AdminCustomers } from './pages/admin/AdminCustomers';
 import { AdminCoupons } from './pages/admin/AdminCoupons';
 import { AdminBanners } from './pages/admin/AdminBanners';
 import { AdminReports } from './pages/admin/AdminReports';
+import { AdminUserRoles } from './pages/admin/AdminUserRoles';
+import { AdminSettings } from './pages/admin/AdminSettings';
+import { AdminPayment } from './pages/admin/AdminPayment';
 
 export default function App() {
   return (
@@ -67,6 +72,7 @@ export default function App() {
 
                     {/* Auth */}
                     <Route path="/login" element={<LoginPage />} />
+                    <Route path="/admin/login" element={<AdminLoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -83,15 +89,21 @@ export default function App() {
                     {/* Checkout (protected) */}
                     <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
 
+                    {/* Access denied */}
+                    <Route path="/access-denied" element={<AccessDeniedPage />} />
+
                     {/* Admin */}
                     <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
                       <Route index element={<AdminDashboard />} />
+                      <Route path="users" element={<AdminCustomers />} />
+                      <Route path="roles" element={<AdminUserRoles />} />
                       <Route path="products" element={<AdminProducts />} />
                       <Route path="orders" element={<AdminOrders />} />
-                      <Route path="customers" element={<AdminCustomers />} />
                       <Route path="coupons" element={<AdminCoupons />} />
                       <Route path="banners" element={<AdminBanners />} />
                       <Route path="reports" element={<AdminReports />} />
+                      <Route path="settings" element={<AdminSettings />} />
+                      <Route path="payment" element={<AdminPayment />} />
                     </Route>
 
                     {/* 404 */}

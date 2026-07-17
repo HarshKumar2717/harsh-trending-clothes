@@ -9,7 +9,8 @@ interface AuthContextValue {
   profile: Profile | null;
   loading: boolean;
   isAdmin: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<Profile>;
+  signInAdmin: (email: string, password: string) => Promise<Profile>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -64,9 +65,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
+    const profile = await loadProfileAndWait(data.user.id);
+    // Block admin-role users from the normal user login
+    if (profile && (profile.role === 'SUPER_ADMIN' || profile.role === 'ADMIN')) {
+      await supabase.auth.signOut();
+      setProfile(null); setUser(null); setSession(null);
+      throw new Error('This account cannot sign in here. Please use the correct login page.');
+    }
+    return profile as Profile;
   };
+
+  const signInAdmin = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    const profile = await loadProfileAndWait(data.user.id);
+    // Only SUPER_ADMIN can use the admin login
+    if (!profile || profile.role !== 'SUPER_ADMIN') {
+      await supabase.auth.signOut();
+      setProfile(null); setUser(null); setSession(null);
+      throw new Error('Access denied. Super Admin credentials required.');
+    }
+    return profile as Profile;
+  };
+
+  async function loadProfileAndWait(uid: string) {
+    const { data } = await supabase.from('profiles').select('*').eq('id', uid).maybeSingle();
+    setProfile(data as Profile | null);
+    return data as Profile | null;
+  }
 
   const signUp = async (email: string, password: string, fullName: string) => {
     const { data, error } = await supabase.auth.signUp({
@@ -123,8 +151,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     profile,
     loading,
-    isAdmin: profile?.role === 'super_admin',
+    isAdmin: profile?.role === 'SUPER_ADMIN',
     signIn,
+    signInAdmin,
     signUp,
     signOut,
     resetPassword,

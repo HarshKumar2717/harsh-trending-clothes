@@ -1,22 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, CreditCard, Banknote, Smartphone, Wallet } from 'lucide-react';
+import { Check, Banknote, ShieldCheck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
-import type { Address, PaymentMethod } from '../lib/types';
+import type { Address } from '../lib/types';
 import { formatINR, GST_RATE } from '../lib/config';
 import { EmptyState } from '../components/ui';
 import { cn } from '../lib/utils';
 import type { Coupon } from '../lib/types';
 
-const PAYMENTS: { v: PaymentMethod; label: string; Icon: any; desc: string }[] = [
-  { v: 'upi', label: 'UPI', Icon: Smartphone, desc: 'Pay via any UPI app' },
-  { v: 'credit_card', label: 'Credit Card', Icon: CreditCard, desc: 'Visa, Mastercard, RuPay' },
-  { v: 'debit_card', label: 'Debit Card', Icon: Wallet, desc: 'All major debit cards' },
-  { v: 'cod', label: 'Cash on Delivery', Icon: Banknote, desc: 'Pay when you receive' },
-];
+
 
 export function CheckoutPage() {
   const { items, subtotal, gst, deliveryCharge, total, clear } = useCart();
@@ -26,7 +21,6 @@ export function CheckoutPage() {
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddr, setSelectedAddr] = useState<string>('');
-  const [payment, setPayment] = useState<PaymentMethod>('cod');
   const [notes, setNotes] = useState('');
   const [placing, setPlacing] = useState(false);
   const [showAddrForm, setShowAddrForm] = useState(false);
@@ -83,8 +77,8 @@ export function CheckoutPage() {
         order_number: orderNumber,
         user_id: user.id,
         status: 'pending',
-        payment_method: payment,
-        payment_status: payment === 'cod' ? 'pending' : 'paid',
+        payment_method: 'cod',
+        payment_status: 'pending',
         subtotal, discount, gst, delivery_charge: deliveryCharge, grand_total: grandTotal,
         coupon_code: coupon?.code || null,
         shipping_name: addr.full_name, shipping_phone: addr.phone,
@@ -175,17 +169,13 @@ export function CheckoutPage() {
           {/* Payment */}
           <section className="rounded-2xl border border-ink-100 p-6">
             <h2 className="mb-4 font-display text-lg font-bold text-ink-900">Payment Method</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {PAYMENTS.map((p) => (
-                <label key={p.v} className={cn('flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition', payment === p.v ? 'border-gold-400 bg-gold-50' : 'border-ink-200 hover:border-ink-300')}>
-                  <input type="radio" name="pay" checked={payment === p.v} onChange={() => setPayment(p.v)} className="mt-1 accent-gold-500" />
-                  <p.Icon className="mt-0.5 text-gold-600" size={20} />
-                  <div>
-                    <p className="text-sm font-semibold text-ink-900">{p.label}</p>
-                    <p className="text-xs text-ink-500">{p.desc}</p>
-                  </div>
-                </label>
-              ))}
+            <div className="flex items-center gap-3 rounded-xl border border-gold-400 bg-gold-50 p-4">
+              <Banknote className="text-gold-600" size={24} />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-ink-900">Cash on Delivery (COD)</p>
+                <p className="text-xs text-ink-500">Pay with cash when you receive your order.</p>
+              </div>
+              <span className="chip-gold"><ShieldCheck size={12} /> Active</span>
             </div>
             <div className="mt-4">
               <label className="label">Order notes (optional)</label>

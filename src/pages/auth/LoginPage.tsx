@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { AuthLayout, Field } from './AuthLayout';
@@ -31,8 +31,6 @@ export function LoginPage() {
     }
   };
 
-  const fillAdmin = () => { setEmail('admin@harshcloth.com'); setPassword('Admin@123'); };
-
   return (
     <AuthLayout
       title="Welcome Back"
@@ -40,7 +38,7 @@ export function LoginPage() {
       footer={<>Don't have an account? <Link to="/register" className="font-semibold text-gold-600">Create one</Link></>}
     >
       <form onSubmit={submit} className="space-y-4">
-        <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required icon={<Mail size={16} />} />
+        <Field label="Email or Phone" value={email} onChange={setEmail} placeholder="you@example.com" required icon={<Mail size={16} />} />
         <div>
           <label className="label">Password</label>
           <div className="relative">
@@ -68,11 +66,6 @@ export function LoginPage() {
           {busy ? 'Signing in…' : <>Sign In <ArrowRight size={16} /></>}
         </button>
       </form>
-
-      <button onClick={fillAdmin} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-gold-200 bg-gold-50 py-3 text-sm font-semibold text-gold-700 hover:bg-gold-100">
-        <ShieldCheck size={16} /> Use Super Admin credentials
-      </button>
-      <p className="mt-2 text-center text-xs text-ink-400">admin@harshcloth.com / Admin@123</p>
     </AuthLayout>
   );
 }

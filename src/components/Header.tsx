@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Search, Heart, ShoppingCart, Menu, X, ChevronDown, LogOut,
-  LayoutDashboard, Package, ShieldCheck,
+  LayoutDashboard, Package,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -23,7 +23,7 @@ const NAV = [
 ];
 
 export function Header() {
-  const { user, profile, signOut, isAdmin } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { count } = useCart();
   const { items: wishItems } = useWishlist();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -154,9 +154,6 @@ export function Header() {
                     <MenuItem to="/account" icon={<LayoutDashboard size={16} />} label="My Account" />
                     <MenuItem to="/account/orders" icon={<Package size={16} />} label="My Orders" />
                     <MenuItem to="/wishlist" icon={<Heart size={16} />} label="Wishlist" />
-                    {isAdmin && (
-                      <MenuItem to="/admin" icon={<ShieldCheck size={16} />} label="Admin Dashboard" gold />
-                    )}
                     <button
                       onClick={() => { signOut(); navigate('/'); }}
                       className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
@@ -252,9 +249,6 @@ export function Header() {
               <Link to="/contact" className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 hover:bg-ink-50">Contact Us</Link>
               {!user && (
                 <Link to="/login" className="btn-dark mt-3">Sign In</Link>
-              )}
-              {isAdmin && (
-                <Link to="/admin" className="btn-gold mt-2">Admin Dashboard</Link>
               )}
             </nav>
           </div>
